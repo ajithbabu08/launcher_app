@@ -5,13 +5,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:launcher_app/main.dart';
-import 'package:url_launcher/url_launcher.dart';
+
+
 
 
 void main() {
   runApp(MaterialApp(home: UserHomeScreen()));
 }
+
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({Key? key});
@@ -29,31 +30,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
 
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //    getApplications();
-  //   Future.delayed(Duration(seconds: 3), () {
-  //     showPopUp(context);
-  //   });
-  // }
-
   @override
   void initState() {
     super.initState();
-    // Set up the method channel to handle method calls from native Android code
-    platform.setMethodCallHandler((call) async {
-      switch (call.method) {
-        case "retrieveApplications":
-        // Call your method to retrieve applications
-          getApplications();
-            Future.delayed(Duration(seconds: 3), () {
-              showPopUp(context);
-            });
-          // return null;
-        default:
-          return null;
-      }
+     getApplications();
+    Future.delayed(Duration(seconds: 3), () {
+      showPopUp(context);
     });
   }
 
@@ -100,9 +82,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 ),
                 TextButton(
                   onPressed: () {
-                    exit(0);
+                    // Navigator.of(context).popUntil((route) => route.isFirst); 
+                    Navigator.of(context).pop(); 
                   },
-                  child: Text("Close"),
+                  child: Text("Cancel"),
                 ),
               ],
             ),
@@ -117,7 +100,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+      body:
+      //  Container(color: Colors.yellow,)
+      Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Expanded(

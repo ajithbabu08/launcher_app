@@ -4,10 +4,11 @@ import android.content.Intent
 import androidx.annotation.NonNull
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import android.app.Activity
+import android.content.pm.PackageManager
+import com.example.launcher_app.InstalledAppsActivity
+
+
 
 
 class MainActivity : FlutterActivity() {
@@ -16,50 +17,41 @@ class MainActivity : FlutterActivity() {
 
 
 
-    override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
-        super.configureFlutterEngine(flutterEngine)
+   override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
+    super.configureFlutterEngine(flutterEngine)
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
-            when (call.method) {
-                "openSettings" -> {
-                    val launcher = call.argument<String>("launcher")
-                    if (launcher == "fl_live_launcher") {
-                        openWelcomeScreen()
-                    } else {
-                        openLauncher()
-                    }
-                    result.success(null)
+    MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+        when (call.method) {
+            "openSettings" -> {
+                val launcher = call.argument<String>("launcher")
+                if (launcher == "fl_live_launcher") {
+                    openInstalledApps()
+                } else {
+                    openLauncher()
                 }
-                else -> {
-                    result.notImplemented()
-                }
+                result.success(null)
+            }
+            else -> {
+                result.notImplemented()
             }
         }
     }
+}
 
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == LAUNCHER_SELECTION_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            // Get the launcher selected from the intent
-            val launcher = data?.getStringExtra("launcher")
-            if (launcher == "fl_live_launcher") {
-                // If fl_live_launcher was selected, send a method call to Flutter to trigger application retrieval
-                val channel = MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, "launcher_settings")
-                channel.invokeMethod("retrieveApplications", null)
-            }
-        }
-    }
+
+private fun openInstalledApps() {
+    val packageManager = packageManager
+
+    val apps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
+    val packageNames = apps.map { app -> app.packageName }
+
+    val intent = Intent(this, InstalledAppsActivity::class.java)
+    intent.putStringArrayListExtra("packageNames", ArrayList<String>(packageNames))
+    startActivity(intent)
+}
 
 
-    private fun openWelcomeScreen() {
-        val intent = Intent(this, WelcomeActivity::class.java)
-        intent.putExtra("launcher", "fl_live_launcher")
-        startActivityForResult(intent, LAUNCHER_SELECTION_REQUEST_CODE)
-    }
-
-    // Define a constant for the request code
-    private val LAUNCHER_SELECTION_REQUEST_CODE = 123
 
 
     private fun openLauncher() {
